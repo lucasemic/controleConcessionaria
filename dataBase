@@ -1,0 +1,243 @@
+create database sa
+
+use sa
+
+CREATE TABLE `manutencoes` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `descricao` varchar(60) DEFAULT NULL,
+  `localizacao` varchar(65) DEFAULT NULL,
+  `observacao` varchar(60) DEFAULT NULL,
+  `data_inicio` date DEFAULT NULL,
+  `data_fim` date DEFAULT NULL,
+  `status` varchar(45) DEFAULT NULL,
+  `horastrabalhadas` decimal(15,2) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4
+
+
+
+
+
+
+
+
+CREATE TABLE `ordens_de_producao` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `modelo` varchar(30) DEFAULT NULL,
+  `marca` varchar(30) DEFAULT NULL,
+  `cor` varchar(30) DEFAULT NULL,
+  `status` varchar(30) DEFAULT NULL,
+  `setor_atual` varchar(30) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4
+
+
+CREATE TABLE `usuarios` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nome` varchar(60) DEFAULT NULL,
+  `nivel_de_acesso` varchar(30) DEFAULT NULL,
+  `email` varchar(60) DEFAULT NULL,
+  `cpf` varchar(45) DEFAULT NULL,
+  `telefone_de_contato` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4
+
+
+
+
+
+DELIMITER $$
+CREATE TRIGGER ordens_de_producao_update
+AFTER INSERT
+ON ordens_de_producao FOR EACH ROW
+BEGIN        
+        INSERT INTO ordens_de_producao_log(id_ordens_de_producao, id_marca, id_modelo, id_status, id_setor_atual, data_ultima_alteracao)
+        VALUES(old.id, old.status, old.id_marca, old.id_modelo, old.id_setor, current_datetime());    
+END$$
+DELIMITER ;
+========================
+DELIMITER $$
+CREATE TRIGGER manutencoes_update
+AFTER INSERT
+ON manutencoes FOR EACH ROW
+BEGIN        
+        INSERT INTO manutencoes_log(id_manutencoes, descricao, observacao, id_setor, data_inicio, data_fim, status, horastrabalhadas, data_ultima_alteracao)
+        VALUES(old.id, old.descricao, old.observacao, old.id_setor, old.data_inicio, old.data_fim, old.status, old.horastrabalhadas, current_datetime());    
+END$$
+DELIMITER ;
+=========================
+DELIMITER $$
+CREATE TRIGGER usuarios_update
+AFTER INSERT
+ON manutencoes FOR EACH ROW
+BEGIN        
+        INSERT INTO manutencoes_log(id_usuarios, nome, id_nivel_de_acesso, email, cpf, telefone_de_contato, data_ultima_alteracao)
+        VALUES(old.id, old.descricao, old.nome, old.id_nivel_de_acesso, old.email, old.cpf, old.telefone_de_contato, current_datetime());    
+END$$
+DELIMITER ;
+
+
+
+
+nível de acesso
+-usuários
+
+localizacao
+status
+-manutencoes
+
+modelo
+marca
+status
+setor_atual
+-ordens_de_producao
+
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+  `modelo` varchar(30) DEFAULT NULL,
+  `marca` varchar(30) DEFAULT NULL,
+  `cor` varchar(30) DEFAULT NULL,
+  `status` varchar(30) DEFAULT NULL,
+  `setor_atual` varchar(30) DEFAULT NULL,
+
+
+
+CREATE TABLE nivel_de_acesso (
+  id int NOT NULL auto_increment,
+  descricao varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+)
+
+create table usuarios (
+id int not null primary key auto_increment,
+nome varchar(45),
+id_nivel_de_acesso int,
+email varchar(45),
+cpf varchar(14),
+telefone_de_contato varchar(15),
+FOREIGN KEY (id_nivel_de_acesso) REFERENCES nivel_de_acesso(id)
+)
+
+create table setores(
+id int not null auto_increment primary key,
+descricao varchar(45)
+)
+
+
+create table manutencoes(
+id int not null auto_increment primary key,
+descricao varchar(45),
+id_setor int,
+observacao text, 
+data_inicio date,
+data_fim date,
+status varchar(45),
+horastrabalhadas decimal(15,2),
+FOREIGN KEY (id_setor) REFERENCES setores(id)
+)
+
+create table modelos(
+id int not null auto_increment primary key,
+descricao varchar(45)
+)
+
+create table marcas(
+id int not null auto_increment primary key,
+descricao varchar(45)
+)
+
+
+create table cores(
+id int not null auto_increment primary key,
+descricao varchar(45)
+
+)
+
+create table ordens_de_producao(
+id int not null auto_increment primary key,
+id_modelo int,
+id_marca int,
+id_cor int,
+status varchar(45),
+id_setor_atual int,
+FOREIGN KEY (id_modelo) REFERENCES modelos(id),
+FOREIGN KEY (id_marca) REFERENCES marcas(id),
+FOREIGN KEY (id_cor) REFERENCES cores(id),
+FOREIGN KEY (id_setor_atual) REFERENCES setores(id)
+)
+
+
+create table ordens_de_producao_log(
+id int not null auto_increment primary key,
+id_ordens_de_producao int,
+id_modelo int,
+id_marca int,
+id_cor int,
+id_status varchar(45),
+id_setor_atual int,
+alterado date
+)
+
+create table manutencoes_log(
+id int not null auto_increment primary key,
+id_manutencoes int,
+descricao varchar(45),
+id_setor int,
+observacao text, 
+data_inicio date,
+data_fim date,
+status varchar(45),
+horastrabalhadas decimal(15,2),
+alterado date
+)
+
+
+create table usuarios_log(
+id int not null auto_increment primary key,
+id_usuarios int,
+nome varchar(45),
+id_nivel_de_acesso int,
+email varchar(45),
+cpf varchar(14),
+telefone_de_contato varchar(15),
+alterado date
+)
+
+DELIMITER $$
+CREATE TRIGGER ordens_de_producao_update
+AFTER update
+ON ordens_de_producao FOR EACH ROW
+BEGIN        
+        INSERT INTO ordens_de_producao_log(id_ordens_de_producao, id_marca, id_modelo, status, id_setor_atual, alterado)
+        VALUES(old.id, old.status, old.id_marca, old.id_modelo, old.id_setor_atual, curdate());    
+END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER manutencoes_update
+AFTER update
+ON manutencoes FOR EACH ROW
+BEGIN        
+        INSERT INTO manutencoes_log(id_manutencoes, descricao, observacao, id_setor, data_inicio, data_fim, status, horastrabalhadas, alterado)
+        VALUES(old.id, old.descricao, old.observacao, old.id_setor, old.data_inicio, old.data_fim, old.status, old.horastrabalhadas, curdate());    
+END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER ordens_de_producao_insert
+AFTER insert
+ON ordens_de_producao FOR EACH ROW
+BEGIN        
+        INSERT INTO ordens_de_producao_log(id_ordens_de_producao, id_marca, id_modelo, status, id_setor_atual, alterado)
+        VALUES(new.id, new.status, new.id_marca, new.id_modelo, new.id_setor_atual, curdate());    
+END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER manutencoes_insert
+AFTER insert
+ON manutencoes FOR EACH ROW
+BEGIN        
+        INSERT INTO manutencoes_log(id_manutencoes, descricao, observacao, id_setor, data_inicio, data_fim, status, horastrabalhadas, alterado)
+        VALUES(new.id, new.descricao, new.observacao, new.id_setor, new.data_inicio, new.data_fim, new.status, new.horastrabalhadas, curdate());    
+END$$
+DELIMITER ;
